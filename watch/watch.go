@@ -96,6 +96,7 @@ func issuesAfter(ctx context.Context, gh *github.Client, owner, repo string, las
 			return issues, nil
 		default:
 		}
+		log.Printf("fetching page %d, since %s", page, lastCreatedAt)
 		es, resp, err := gh.Issues.ListByRepo(ctx, owner, repo, &github.IssueListByRepoOptions{
 			Since: lastCreatedAt,
 			State: "open",
