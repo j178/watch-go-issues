@@ -77,9 +77,12 @@ func Watch() error {
 		}
 	}
 
-	err = updateLastCreatedAt(ctx, owner, repo, time.Now())
-	if err != nil {
-		return err
+	if len(issues) > 0 {
+		lastCreatedAt = issues[0].GetCreatedAt().Time
+		err = updateLastCreatedAt(ctx, owner, repo, lastCreatedAt)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
