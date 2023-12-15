@@ -136,6 +136,9 @@ func getLastCreatedAt(ctx context.Context, owner, repo string) (time.Time, error
 	key := fmt.Sprintf("last_created_at:%s:%s", owner, repo)
 	cmd := r.B().Get().Key(key).Build()
 	t, err := r.Do(ctx, cmd).AsInt64()
+	if rueidis.IsRedisNil(err) {
+		return time.Time{}, nil
+	}
 	if err != nil {
 		return time.Time{}, err
 	}
