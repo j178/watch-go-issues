@@ -1,4 +1,4 @@
-package watch_go_issues
+package watch
 
 import (
 	"context"

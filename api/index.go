@@ -3,7 +3,7 @@ package api
 import (
 	"net/http"
 
-	watchgoissues "github.com/j178/watch-go-issues"
+	watchgoissues "github.com/j178/watch-go-issues/watch"
 )
 
 func Handler(w http.ResponseWriter, r *http.Request) {
