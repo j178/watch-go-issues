@@ -116,6 +116,7 @@ func issuesAfter(ctx context.Context, gh *github.Client, owner, repo string, las
 }
 
 var redis = sync.OnceValue(func() rueidis.Client {
+	kvURL = strings.ReplaceAll(kvURL, "redis://", "rediss://")
 	opt, err := rueidis.ParseURL(kvURL)
 	if err != nil {
 		log.Fatalf("parse redis url: %v", err)
