@@ -146,16 +146,18 @@ func issuesAfter(ctx context.Context, gh *githubv4.Client, owner, repo string, e
 			break
 		}
 
-		log.Printf("fetching page %d, before %s", page, endCursor)
+		log.Printf("fetching page %d, after %s", page, endCursor)
 		err := gh.Query(ctx, &query, vars)
 		if err != nil {
 			return nil, endCursor, err
 		}
-		issues = append(issues, query.Repository.Issues.Nodes...)
+		if len(query.Repository.Issues.Nodes) != 0 {
+			issues = append(issues, query.Repository.Issues.Nodes...)
+			endCursor = query.Repository.Issues.PageInfo.EndCursor
+		}
 		if !query.Repository.Issues.PageInfo.HasNextPage {
 			break
 		}
-		endCursor = query.Repository.Issues.PageInfo.EndCursor
 		vars["after"] = githubv4.String(endCursor)
 	}
 
