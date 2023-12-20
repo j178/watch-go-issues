@@ -80,15 +80,16 @@ func Watch() error {
 
 		content := fmt.Sprintf(
 			"**%s** created a new issue: [%s](%s)",
-			EscapeMarkdown(author),
-			EscapeMarkdown(i.Title),
-			EscapeMarkdown(i.URL),
+			tgbotapi.EscapeText(tgbotapi.ModeMarkdownV2, author),
+			tgbotapi.EscapeText(tgbotapi.ModeMarkdownV2, i.Title),
+			tgbotapi.EscapeText(tgbotapi.ModeMarkdownV2, i.URL),
 		)
 		err = send(ctx, tgChatID, content)
 		if err != nil {
 			return err
 		}
 	}
+	log.Printf("found %d issues, end cursor %s", len(issues), endCursor)
 
 	if len(issues) > 0 {
 		err = updateEndCursor(ctx, repo.owner, repo.name, endCursor)
@@ -126,7 +127,11 @@ type IssueQuery struct {
 	} `graphql:"repository(owner: $owner, name: $name)"`
 }
 
-func issuesAfter(ctx context.Context, gh *githubv4.Client, owner, repo string, endCursor string) ([]Issue, string, error) {
+func issuesAfter(ctx context.Context, gh *githubv4.Client, owner, repo string, endCursor string) (
+	[]Issue,
+	string,
+	error,
+) {
 	var issues []Issue
 	var query IssueQuery
 	vars := map[string]any{
@@ -164,21 +169,23 @@ func issuesAfter(ctx context.Context, gh *githubv4.Client, owner, repo string, e
 	return issues, endCursor, nil
 }
 
-var redis = sync.OnceValue(func() rueidis.Client {
-	kvURL = strings.ReplaceAll(kvURL, "redis://", "rediss://")
-	opt, err := rueidis.ParseURL(kvURL)
-	if err != nil {
-		log.Fatalf("parse redis url: %v", err)
-	}
-	opt.DisableCache = true
-	opt.ForceSingleClient = true
+var redis = sync.OnceValue(
+	func() rueidis.Client {
+		kvURL = strings.ReplaceAll(kvURL, "redis://", "rediss://")
+		opt, err := rueidis.ParseURL(kvURL)
+		if err != nil {
+			log.Fatalf("parse redis url: %v", err)
+		}
+		opt.DisableCache = true
+		opt.ForceSingleClient = true
 
-	c, err := rueidis.NewClient(opt)
-	if err != nil {
-		log.Fatalf("init redis: %v", err)
-	}
-	return c
-})
+		c, err := rueidis.NewClient(opt)
+		if err != nil {
+			log.Fatalf("init redis: %v", err)
+		}
+		return c
+	},
+)
 
 func getEndCursor(ctx context.Context, owner, repo string) (string, error) {
 	// starts at https://github.com/golang/go/issues/64766
@@ -208,13 +215,15 @@ func updateEndCursor(ctx context.Context, owner, repo string, endCursor string) 
 	return nil
 }
 
-var bot = sync.OnceValue(func() *tgbotapi.BotAPI {
-	bot, err := tgbotapi.NewBotAPI(tgToken)
-	if err != nil {
-		log.Fatalf("init telegram bot: %v", err)
-	}
-	return bot
-})
+var bot = sync.OnceValue(
+	func() *tgbotapi.BotAPI {
+		bot, err := tgbotapi.NewBotAPI(tgToken)
+		if err != nil {
+			log.Fatalf("init telegram bot: %v", err)
+		}
+		return bot
+	},
+)
 
 func send(ctx context.Context, chatID int64, content string) error {
 	msg := tgbotapi.NewMessage(chatID, content)
@@ -227,16 +236,4 @@ func send(ctx context.Context, chatID int64, content string) error {
 		_, err := bot().Send(msg)
 		return err
 	}
-}
-
-var markdownReplacer = strings.NewReplacer(
-	"_", "\\_", "*", "\\*", "[", "\\[", "]", "\\]", "(",
-	"\\(", ")", "\\)", "~", "\\~", "`", "\\`", ">", "\\>",
-	"#", "\\#", "+", "\\+", "-", "\\-", "=", "\\=", "|",
-	"\\|", "{", "\\{", "}", "\\}", ".", "\\.", "!", "\\!",
-	"\\", "\\\\",
-)
-
-func EscapeMarkdown(text string) string {
-	return markdownReplacer.Replace(text)
 }
