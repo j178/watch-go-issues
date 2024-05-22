@@ -33,6 +33,16 @@ var authors = map[string]bool{
 	"cherrymui":      true,
 	"mknyszek":       true,
 	"thanm":          true,
+	"josharian":      true,
+	"adg":            true,
+	"cuonglm":        true,
+	"tklauser":       true,
+	"prattmic":       true,
+	"mvdan":          true,
+	"dsnet":          true,
+	"dmitshur":       true,
+	"neild":          true,
+	"adonovan":       true,
 }
 
 var (
