@@ -42,7 +42,6 @@ var authors = map[string]bool{
 	"dsnet":          true,
 	"dmitshur":       true,
 	"neild":          true,
-	"adonovan":       true,
 }
 
 var (
