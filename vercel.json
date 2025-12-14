@@ -1,8 +1,15 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     {
       "source": "/api/:path*",
       "destination": "/api/index.go"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api",
+      "schedule": "*/10 * * * *"
     }
   ]
 }
