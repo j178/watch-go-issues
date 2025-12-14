@@ -9,7 +9,7 @@ import (
 
 func Handler(w http.ResponseWriter, r *http.Request) {
 	secret := r.Header.Get("Authorization")
-	if secret != os.Getenv("CRON_SECRET") {
+	if secret != os.Getenv("SECRET") {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
