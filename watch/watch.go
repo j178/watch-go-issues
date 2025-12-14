@@ -44,18 +44,7 @@ var authors = map[string]bool{
 	"neild":          true,
 }
 
-var (
-	ghToken = env("GITHUB_TOKEN")
-	tgToken = env("TELEGRAM_TOKEN")
-	tgChat  = env("TELEGRAM_CHAT")
-	kvURL   = env("KV_URL")
-)
-
 func env(key string) string {
-	for k, v := range os.Environ() {
-		fmt.Printf("env %q=%q\n", k, v)
-	}
-
 	if v := os.Getenv(key); v != "" {
 		return v
 	}
@@ -63,7 +52,7 @@ func env(key string) string {
 }
 
 func Watch() error {
-	tgChatID, err := strconv.ParseInt(tgChat, 10, 64)
+	tgChatID, err := strconv.ParseInt(env("TELEGRAM_CHAT"), 10, 64)
 	if err != nil {
 		return err
 	}
@@ -72,7 +61,7 @@ func Watch() error {
 	defer cancel()
 
 	src := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: ghToken},
+		&oauth2.Token{AccessToken: env("GITHUB_TOKEN")},
 	)
 	gh := githubv4.NewClient(oauth2.NewClient(ctx, src))
 
@@ -184,6 +173,7 @@ func issuesAfter(ctx context.Context, gh *githubv4.Client, owner, repo string, e
 
 var redis = sync.OnceValue(
 	func() rueidis.Client {
+		kvURL := env("KV_URL")
 		kvURL = strings.ReplaceAll(kvURL, "redis://", "rediss://")
 		opt, err := rueidis.ParseURL(kvURL)
 		if err != nil {
@@ -230,7 +220,7 @@ func updateEndCursor(ctx context.Context, owner, repo string, endCursor string) 
 
 var bot = sync.OnceValue(
 	func() *tgbotapi.BotAPI {
-		bot, err := tgbotapi.NewBotAPI(tgToken)
+		bot, err := tgbotapi.NewBotAPI(env("TELEGRAM_TOKEN"))
 		if err != nil {
 			log.Fatalf("init telegram bot: %v", err)
 		}
