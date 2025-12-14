@@ -52,6 +52,10 @@ var (
 )
 
 func env(key string) string {
+	for k, v := range os.Environ() {
+		fmt.Printf("env %q=%q\n", k, v)
+	}
+
 	if v := os.Getenv(key); v != "" {
 		return v
 	}
